@@ -1,0 +1,44 @@
+- Order
+	- Buy/Sell
+	- List of properties wanted for a SINGLE item
+	- Properties: list of values/options, range or boolean
+	- Order size?
+	- Later on: order composed of a union of several items, each with different properties
+	- Later on: filter function (example: I DON'T want a specific property, like the color red)
+	
+- Central System
+	- Structure for index orders
+	- Unordered list for non-index orders
+	- Functionalities: add, modify and cancel order
+
+- New Order
+	- Index order
+		- List of properties for a given item
+		- Organized in a tree-like graph (where each layer = different property) for fast lookups/retrieval
+		- Need to analyse best possible structure?
+	- Non-index order
+		- Simply an item
+		
+- Central System Logic:
+	- New order
+		- for each incoming new order
+			- try matching with index orders structure
+			- if no matches
+				- if index order add to index orders structure
+				- if non-index order add to unordered list of non-index orders
+		- after all new orders have been handled
+			- for each non-index order
+				- try matching with indexed orders structure
+	
+	- Modify order
+		- check for new matches
+		- should check for unnecessary cases
+		- example: seller raises price; if there were no matches before, there won't be any matches now
+	
+	- Cancel order
+		- simply remove the order from the system
+		
+- Notes
+	- Central System could be made of only two structures (index and non-index orders)
+	- Add a different field, type (either Buy or Sell), to each order
+	- Avoids duplicate structures by only checking type-field when looping index orders list
