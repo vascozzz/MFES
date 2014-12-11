@@ -1,0 +1,6 @@
+create prod := new Product(mk_token("dadad"));
+create ord1 := new Order(<BUY>, 0, 10, prod);
+create ord2 := new Order(<SELL>, 0, 10, prod);
+create ex := new ExchangeSystem();
+print ex.insertOrder(ord1);
+print ex.insertOrder(ord2);
