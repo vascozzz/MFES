@@ -1,0 +1,16 @@
+class Transaction
+
+types
+
+instance variables
+	public buyOrder : Order;
+	public sellOrder : Order;
+	
+	inv buyOrder <> sellOrder and buyOrder.type = <BUY> and sellOrder.type = <SELL>;
+
+operations
+	public Transaction: () ==> Transaction
+	Transaction() == 
+		return self;
+		
+end Transaction

@@ -1,0 +1,15 @@
+class Product
+
+types
+	public Identifier = token;
+
+instance variables
+	public id: Identifier;
+	
+operations
+	public Product: Identifier ==> Product
+	Product(newId) == (
+		id := newId;
+	);
+
+end Product

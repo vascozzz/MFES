@@ -1,0 +1,27 @@
+class Order
+
+types
+	public OrderType = <BUY> | <SELL>;
+
+instance variables
+	public type : OrderType;
+	public minPrice : real;
+	public maxPrice : real;
+	public product : Product;
+	public fulfilled: bool := false;
+
+operations
+	public Order: OrderType * real * real * Product ==> Order
+	Order(ty, min, max, prod) == (
+		type := ty;
+		minPrice := min;
+		maxPrice := max;
+		product := prod;
+	);
+	
+	public setStatus: bool ==> ()
+	setStatus(status) ==
+		fulfilled := status
+	post fulfilled = status;
+
+end Order

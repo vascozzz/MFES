@@ -1,0 +1,36 @@
+class ExchangeSystem
+
+types
+
+instance variables
+	public orders : set of Order := {};
+	public history : seq of Transaction := []; 
+	
+	inv forall o in set orders & o.fulfilled = false;
+
+operations
+	public ExchangeSystem: () ==> ExchangeSystem
+	ExchangeSystem() == 
+		return self;
+		
+	public insertOrder: Order ==> ()
+	insertOrder(order) ==
+		orders := orders union {order}
+	pre order.fulfilled = false
+	;-- post orders = orders~ union {order};
+	
+	public cancelOrder: Order ==> ()
+	cancelOrder(order) == 
+		orders := orders \ {order}
+	post orders = orders \ {order};
+	
+	public matchOrder: Order ==> bool
+		matchOrder(newOrder) == (
+			for all order in set orders do (
+				if newOrder.product = order.product then
+					return true
+			);
+			return false;
+		)
+		
+end ExchangeSystem
