@@ -7,6 +7,7 @@ instance variables
 	public history : seq of Transaction := []; 
 	
 	inv forall o in set orders & o.fulfilled = false;
+	--inv for t in seq history & t.fulfilled = true;
 
 operations
 	public ExchangeSystem: () ==> ExchangeSystem
@@ -25,12 +26,33 @@ operations
 	post orders = orders \ {order};
 	
 	public matchOrder: Order ==> bool
-		matchOrder(newOrder) == (
-			for all order in set orders do (
-				if newOrder.product = order.product then
-					return true
+		matchOrder(newOrder) ==
+		(
+			for all order in set orders do
+			(
+				if (newOrder <> order and
+						newOrder.type <> order.type and
+						newOrder.product = order.product and
+						newOrder.minPrice <= order.maxPrice and
+						order.minPrice <= newOrder.maxPrice)
+			  then
+				(
+					order.setStatus(true);
+					newOrder.setStatus(true);
+					history := history^[new Transaction(order, newOrder)];
+					orders := orders\{order, newOrder};
+					return true;
+				);
 			);
 			return false;
-		)
+		);
+		
+	public getHistory : () ==> seq of Transaction
+	getHistory() ==
+		return history;
+		
+	public getLastTransaction : () ==> Transaction
+	getLastTransaction() ==
+		return history(len history);
 		
 end ExchangeSystem

@@ -9,6 +9,8 @@ instance variables
 	public maxPrice : real;
 	public product : Product;
 	public fulfilled: bool := false;
+	
+	inv minPrice <= maxPrice;
 
 operations
 	public Order: OrderType * real * real * Product ==> Order

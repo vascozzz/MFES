@@ -4,3 +4,10 @@ create ord2 := new Order(<SELL>, 0, 10, prod);
 create ex := new ExchangeSystem();
 print ex.insertOrder(ord1);
 print ex.insertOrder(ord2);
+print ex.matchOrder(ord1);
+
+create ord3 := new Order(<BUY>, 0, 20, prod);
+create ord4 := new Order(<SELL>, 0, 20, prod);
+print ex.insertOrder(ord3);
+print ex.insertOrder(ord4);
+print ex.matchOrder(ord3);

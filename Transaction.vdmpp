@@ -9,8 +9,19 @@ instance variables
 	inv buyOrder <> sellOrder and buyOrder.type = <BUY> and sellOrder.type = <SELL>;
 
 operations
-	public Transaction: () ==> Transaction
-	Transaction() == 
-		return self;
+	public Transaction: Order * Order ==> Transaction
+	Transaction(order1, order2) == 
+	(
+		if(order1.type = <BUY>) then
+		(
+			buyOrder := order1;
+			sellOrder := order2;
+		)
+		else
+		(
+			buyOrder := order2;
+			sellOrder := order1;
+		)
+	);
 		
 end Transaction
