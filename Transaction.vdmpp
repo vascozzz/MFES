@@ -1,19 +1,31 @@
 class Transaction
+/*
+	Defines a transaction that previously took place in the exchange system.
+	A transaction is composed of pair of orders.
+*/
 
 types
 
 instance variables
+	-- different names for easy access to specific type of order
 	public buyOrder : Order;
 	public sellOrder : Order;
 	
-	inv buyOrder <> sellOrder and buyOrder.type = <BUY> and sellOrder.type = <SELL>;
-	inv buyOrder.fulfilled = true and sellOrder.fulfilled = true;
+	-- orders should be different and of different types
+	inv buyOrder <> sellOrder 
+		and buyOrder.type = <BUY> 
+		and sellOrder.type = <SELL>;
+		
+	-- orders in a transaction should always have their status set to fulfilled
+	inv buyOrder.fulfilled = true 
+		and sellOrder.fulfilled = true;
 	
 
 operations
 	public Transaction: Order * Order ==> Transaction
 	Transaction(order1, order2) == 
 	(
+		-- checking for type here so that we know specific orders are assigned to the correct variables
 		if(order1.type = <BUY>) then
 		(
 			buyOrder := order1;
@@ -24,6 +36,10 @@ operations
 			buyOrder := order2;
 			sellOrder := order1;
 		)
-	);
+	)
+	post buyOrder.type = <BUY>
+			and buyOrder.fulfilled = true
+			and sellOrder.type = <SELL>
+			and sellOrder.fulfilled = true;
 		
 end Transaction

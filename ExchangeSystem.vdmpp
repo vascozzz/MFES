@@ -1,14 +1,26 @@
 class ExchangeSystem
+/*
+	Contains the core model of the exchange system.
+	Defines the state variables and operations available to the users.
+*/
 
 types
 	public String = seq of char;
 	
 instance variables
+	-- products allowed to be bought/sold
 	public products : set of Product := {};
+	
+	-- orders currently available for matches
 	public orders : set of Order := {};
+	
+	-- sequence of transactions previously completed
 	public history : seq of Transaction := []; 
 	
+	-- no order available for matches should be fulfilled
 	inv forall o in set orders & o.fulfilled = false;
+	
+	-- product ids should always be unique
 	inv not exists p1, p2 in set products & p1 <> p2 and p1.id = p2.id;
 
 operations
@@ -16,16 +28,19 @@ operations
 	ExchangeSystem() == 
 		return self;
 		
+	/* Admin Operations */
+	
 	public insertProduct: Product ==> ()
 	insertProduct(product) ==
 		products := products union {product}
 	post product in set products;
-	
+		
 	public removeProduct: Product ==> ()
 	removeProduct(product) ==
 	(
 		products := products \ {product};
 		
+		-- after removing a product, all orders matching said product should also be removed
 		for all order in set orders do
 			if (order.product = product) then
 				orders := orders \ {order};
@@ -33,11 +48,13 @@ operations
 	pre product in set products
 	post not product in set products;
 		
+	/* End-user Operations */
+	
 	public insertOrder: Order ==> ()
 	insertOrder(order) ==
 		orders := orders union {order}
-	pre order.product in set products and
-			order.fulfilled = false
+	pre order.product in set products 
+		and order.fulfilled = false
 	post order in set orders;
 	
 	public cancelOrder: Order ==> ()
@@ -45,6 +62,7 @@ operations
 		orders := orders \ {order}
 	pre order in set orders;
 	
+	-- Returns set of all available matches for a specific order.
 	public matchOrder: Order ==> set of Order
 	matchOrder(orderToMatch) ==
 	(
@@ -52,18 +70,21 @@ operations
 		
 		for all order in set orders do
 		(
-			if (orderToMatch <> order and
-					orderToMatch.type <> order.type and
-					orderToMatch.product = order.product and
-					orderToMatch.minPrice <= order.maxPrice and
-					order.minPrice <= orderToMatch.maxPrice)
+			-- orders should:
+			-- be different and of different types (BUY/SELL)
+			-- refer to the same product
+			-- have intersecting ranges of prices
+			if (orderToMatch <> order 
+					and orderToMatch.type <> order.type 
+					and orderToMatch.product = order.product 
+					and orderToMatch.minPrice <= order.maxPrice 
+					and order.minPrice <= orderToMatch.maxPrice)
 		  then
 			(
-				--If buying, we're looking for an order that contains all the attributes you want
-				--If selling, we're looking for an order whose attribute requirements are contained in ours
-				
-				if(orderToMatch.type = <BUY> and inMapSubset(orderToMatch.attributes, order.attributes) or
-					 orderToMatch.type = <SELL> and inMapSubset(order.attributes, orderToMatch.attributes))
+				-- if buying, we're looking for an order that contains all the attributes we want
+				-- if selling, we're looking for an order whose attribute are contained in ours			
+				if(orderToMatch.type = <BUY> and inMapSubset(orderToMatch.attributes, order.attributes) 
+					or orderToMatch.type = <SELL> and inMapSubset(order.attributes, orderToMatch.attributes))
 				then
 				(
 					matches := matches union {order};
@@ -74,7 +95,7 @@ operations
 	)
 	pre orderToMatch in set orders;
 	
-		
+	-- Matches two orders; removes both from orders available for matches and adds them to history.
 	public pickMatch: Order * Order ==> ()
 	pickMatch(order1, order2) ==
 	(
@@ -84,12 +105,14 @@ operations
 		history := history ^ [new Transaction(order1, order2)];		
 		orders := orders \ {order1, order2};
 	)
-	pre order1 <> order2 and
-			order1.type <> order2.type and
-			order1.product = order2.product and
-			order1.minPrice <= order2.maxPrice and
-			order2.minPrice <= order1.maxPrice and
-			(order1.type = <BUY> and inMapSubset(order1.attributes, order2.attributes) or order1.type = <SELL> and inMapSubset(order2.attributes, order1.attributes));
+	-- orders may only be picked if they can actually be matched
+	pre order1 <> order2 
+			and order1.type <> order2.type 
+			and order1.product = order2.product 
+			and order1.minPrice <= order2.maxPrice 
+			and order2.minPrice <= order1.maxPrice 
+			and (order1.type = <BUY> and inMapSubset(order1.attributes, order2.attributes) 
+			or order1.type = <SELL> and inMapSubset(order2.attributes, order1.attributes));
 		
 	public getHistory : () ==> seq of Transaction
 	getHistory() ==
@@ -100,11 +123,14 @@ operations
 		return history(len history);
 
 functions
+	-- Checks if one map is subset of the other.
+	-- Auxiliary when checking for matching attributes inside orders.
 	public inMapSubset :  map String to token *  map String to token +> bool
 	inMapSubset(map1, map2) ==
-		--Verify if map2 has at least map1's keys AND if map1's key values are equal in map2
-		if(dom map1 subset dom map2 and
-			 map1 ++ (dom map1 <: map2) = map1)
+		-- map2 must have all of map1's keys
+		-- map2's keys->values that match must be equal to map1's
+		if(dom map1 subset dom map2
+			 and map1 ++ (dom map1 <: map2) = map1)
 		then
 			true
 		else

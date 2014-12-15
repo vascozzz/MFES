@@ -1,4 +1,7 @@
 class Order
+/*
+	Defines an order that may be placed in the exchange system.
+*/
 
 types
 	public OrderType = <BUY> | <SELL>;
@@ -7,9 +10,16 @@ types
 instance variables
 	public type : OrderType;
 	public product : Product;
+	
+	-- order may have several filters in regards to attributes
+	-- for example, for product "Car", user may request "color"->"red" and/or "year"->"1990"
 	public attributes: map String to token := { |-> };
+	
+	-- range of acceptable prices when buying or selling
 	public minPrice : real;
 	public maxPrice : real;
+	
+	-- by default, an order should not be fulfilled
 	public fulfilled: bool := false;
 	
 	inv minPrice <= maxPrice;

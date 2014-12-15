@@ -1,6 +1,10 @@
 class Product
+/*
+	Defines a product that may be bought/sold in the exchange system.
+*/
 
 types
+	-- identifier can be anything, as long as it is unique to the exchange system (verified inside respective class)
 	public Identifier = token;
 
 instance variables

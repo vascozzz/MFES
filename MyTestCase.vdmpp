@@ -1,8 +1,7 @@
 class MyTestCase
 /*
   Superclass for test classes, simpler but more practical than VDMUnit`TestCase. 
-  For proper use, you have to do: New -> Add VDM Library -> IO.
-  JPF, FEUP, MFES, 2014/15.
+  Provided by Professor João Carlos Pascoal Faria.
 */
 
 operations
