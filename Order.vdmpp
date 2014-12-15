@@ -2,23 +2,26 @@ class Order
 
 types
 	public OrderType = <BUY> | <SELL>;
+	public String = seq of char;
 
 instance variables
 	public type : OrderType;
+	public product : Product;
+	public attributes: map String to token := { |-> };
 	public minPrice : real;
 	public maxPrice : real;
-	public product : Product;
 	public fulfilled: bool := false;
 	
 	inv minPrice <= maxPrice;
 
 operations
-	public Order: OrderType * real * real * Product ==> Order
-	Order(ty, min, max, prod) == (
+	public Order: OrderType * Product * map String to token * real * real ==> Order
+	Order(ty, prod, attr, min, max) == (
 		type := ty;
-		minPrice := min;
-		maxPrice := max;
 		product := prod;
+		attributes := attr;
+		minPrice := min;
+		maxPrice := max
 	);
 	
 	public setStatus: bool ==> ()

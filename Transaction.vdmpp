@@ -7,6 +7,8 @@ instance variables
 	public sellOrder : Order;
 	
 	inv buyOrder <> sellOrder and buyOrder.type = <BUY> and sellOrder.type = <SELL>;
+	inv buyOrder.fulfilled = true and sellOrder.fulfilled = true;
+	
 
 operations
 	public Transaction: Order * Order ==> Transaction

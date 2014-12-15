@@ -1,58 +1,113 @@
 class ExchangeSystem
 
 types
-
+	public String = seq of char;
+	
 instance variables
+	public products : set of Product := {};
 	public orders : set of Order := {};
 	public history : seq of Transaction := []; 
 	
 	inv forall o in set orders & o.fulfilled = false;
-	--inv for t in seq history & t.fulfilled = true;
+	inv not exists p1, p2 in set products & p1 <> p2 and p1.id = p2.id;
 
 operations
 	public ExchangeSystem: () ==> ExchangeSystem
 	ExchangeSystem() == 
 		return self;
 		
+	public insertProduct: Product ==> ()
+	insertProduct(product) ==
+		products := products union {product}
+	post product in set products;
+	
+	public removeProduct: Product ==> ()
+	removeProduct(product) ==
+	(
+		products := products \ {product};
+		
+		for all order in set orders do
+			if (order.product = product) then
+				orders := orders \ {order};
+	)
+	pre product in set products
+	post not product in set products;
+		
 	public insertOrder: Order ==> ()
 	insertOrder(order) ==
 		orders := orders union {order}
-	pre order.fulfilled = false
-	;-- post orders = orders~ union {order};
+	pre order.product in set products and
+			order.fulfilled = false
+	post order in set orders;
 	
 	public cancelOrder: Order ==> ()
 	cancelOrder(order) == 
 		orders := orders \ {order}
-	post orders = orders \ {order};
+	pre order in set orders;
 	
-	public matchOrder: Order ==> bool
-		matchOrder(newOrder) ==
+	public matchOrder: Order ==> set of Order
+	matchOrder(orderToMatch) ==
+	(
+		dcl matches : set of Order := {};
+		
+		for all order in set orders do
 		(
-			for all order in set orders do
+			if (orderToMatch <> order and
+					orderToMatch.type <> order.type and
+					orderToMatch.product = order.product and
+					orderToMatch.minPrice <= order.maxPrice and
+					order.minPrice <= orderToMatch.maxPrice)
+		  then
 			(
-				if (newOrder <> order and
-						newOrder.type <> order.type and
-						newOrder.product = order.product and
-						newOrder.minPrice <= order.maxPrice and
-						order.minPrice <= newOrder.maxPrice)
-			  then
+				--If buying, we're looking for an order that contains all the attributes you want
+				--If selling, we're looking for an order whose attribute requirements are contained in ours
+				
+				if(orderToMatch.type = <BUY> and inMapSubset(orderToMatch.attributes, order.attributes) or
+					 orderToMatch.type = <SELL> and inMapSubset(order.attributes, orderToMatch.attributes))
+				then
 				(
-					order.setStatus(true);
-					newOrder.setStatus(true);
-					history := history^[new Transaction(order, newOrder)];
-					orders := orders\{order, newOrder};
-					return true;
+					matches := matches union {order};
 				);
 			);
-			return false;
 		);
+		return matches;
+	)
+	pre orderToMatch in set orders;
+	
+		
+	public pickMatch: Order * Order ==> ()
+	pickMatch(order1, order2) ==
+	(
+		order1.setStatus(true);
+		order2.setStatus(true);
+		
+		history := history ^ [new Transaction(order1, order2)];		
+		orders := orders \ {order1, order2};
+	)
+	pre order1 <> order2 and
+			order1.type <> order2.type and
+			order1.product = order2.product and
+			order1.minPrice <= order2.maxPrice and
+			order2.minPrice <= order1.maxPrice and
+			(order1.type = <BUY> and inMapSubset(order1.attributes, order2.attributes) or order1.type = <SELL> and inMapSubset(order2.attributes, order1.attributes));
 		
 	public getHistory : () ==> seq of Transaction
 	getHistory() ==
 		return history;
-		
+
 	public getLastTransaction : () ==> Transaction
 	getLastTransaction() ==
 		return history(len history);
-		
+
+functions
+	public inMapSubset :  map String to token *  map String to token +> bool
+	inMapSubset(map1, map2) ==
+		--Verify if map2 has at least map1's keys AND if map1's key values are equal in map2
+		if(dom map1 subset dom map2 and
+			 map1 ++ (dom map1 <: map2) = map1)
+		then
+			true
+		else
+			false;
+
 end ExchangeSystem

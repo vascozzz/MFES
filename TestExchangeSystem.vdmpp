@@ -1,0 +1,167 @@
+class TestExchangeSystem is subclass of MyTestCase
+	
+operations
+	private loadProducts: ExchangeSystem * set of Product ==> ()
+	loadProducts(ex, products) ==
+	(
+		for all product in set products do
+			ex.insertProduct(product);
+	);
+	
+	private insertOrders: ExchangeSystem * set of Order ==> ()
+	insertOrders(ex, orders) ==
+	(
+		for all order in set orders do
+			ex.insertOrder(order);
+	);
+
+	public testLoadAndInsertOrder: () ==> ()
+	testLoadAndInsertOrder() ==
+	(
+		dcl ex : ExchangeSystem;
+		dcl prod : Product;
+		dcl order : Order;
+		
+		ex := new ExchangeSystem();
+		prod := new Product(mk_token("automovel"));
+		order := new Order(<SELL>, prod, {"cor" |-> mk_token("vermelho"), "marca" |-> mk_token("Samsung")}, 0, 100);
+		
+		loadProducts(ex, {prod});
+		insertOrders(ex, {order});
+		
+		assertEqual(ex.orders, {order});
+		assertEqual(ex.products, {prod});
+	);
+	
+	public testLoadAndCancelOrder: () ==> ()
+	testLoadAndCancelOrder() ==
+	(
+		dcl ex : ExchangeSystem;
+		dcl prod : Product;
+		dcl order : Order;
+		
+		ex := new ExchangeSystem();
+		prod := new Product(mk_token("automovel"));
+		order := new Order(<SELL>, prod, {"cor" |-> mk_token("vermelho"), "marca" |-> mk_token("Samsung")}, 0, 100);
+		
+		loadProducts(ex, {prod});
+		insertOrders(ex, {order});
+		
+		ex.cancelOrder(order);
+		
+		assertEqual(ex.orders, {});
+	);
+
+	public testLoadAndCheckMatches: () ==> ()
+	testLoadAndCheckMatches() ==
+	(
+		dcl ex : ExchangeSystem;
+		dcl prod1 : Product;
+		dcl prod2 : Product;
+		dcl order1: Order;
+		dcl order2 : Order;
+		dcl order3 : Order;
+		dcl order4 : Order;
+		dcl order5 : Order;
+		
+		ex := new ExchangeSystem();
+		prod1 := new Product(mk_token("automovel"));
+		prod2 := new Product(mk_token("telemovel"));
+		loadProducts(ex, {prod1, prod2});
+				
+		order1 := new Order(<BUY>,  prod1, {"cor" |-> mk_token("vermelho"), "marca" |-> mk_token("Nissan")}, 0, 100);
+		order2 := new Order(<SELL>, prod1, {"cor" |-> mk_token("vermelho"), "marca" |-> mk_token("Nissan")}, 1000, 2000);
+		insertOrders(ex, {order1, order2});
+		assertEqual(ex.matchOrder(order1), {});
+		
+		order3 := new Order(<SELL>, prod1, {|->}, 30, 50);
+		insertOrders(ex, {order3});
+		assertEqual(ex.matchOrder(order1), {});
+		
+		order4 := new Order(<SELL>,  prod2, {"cor" |-> mk_token("vermelho"), "marca" |-> mk_token("Samsung")}, 0, 100);
+		insertOrders(ex, {order4});
+		assertEqual(ex.matchOrder(order1), {});
+		
+		order5 := new Order(<SELL>, prod1, {"cor" |-> mk_token("vermelho"), "marca" |-> mk_token("Nissan")}, 30, 50);
+		insertOrders(ex, {order5});
+		assertEqual(ex.matchOrder(order1), {order5});
+	);
+	
+	public testLoadAndPickOrder: () ==> ()
+	testLoadAndPickOrder() ==
+	(
+		dcl ex : ExchangeSystem;
+		dcl prod : Product;
+		dcl order1: Order;
+		dcl order2 : Order;
+		
+		ex := new ExchangeSystem();
+		prod := new Product(mk_token("automovel"));
+		order1 := new Order(<BUY>,  prod, {"cor" |-> mk_token("vermelho"), "marca" |-> mk_token("Nissan")}, 0, 100);
+		order2 := new Order(<SELL>, prod, {"cor" |-> mk_token("vermelho"), "marca" |-> mk_token("Nissan")}, 30, 50);
+	
+		loadProducts(ex, {prod});
+		insertOrders(ex, {order1, order2});
+		ex.pickMatch(order1, order2);
+	);
+
+	public testLoadAndFailPickOrder: () ==> ()
+	testLoadAndFailPickOrder() ==
+	(
+		dcl ex : ExchangeSystem;
+		dcl prod : Product;
+		dcl order1: Order;
+		dcl order2 : Order;
+		
+		ex := new ExchangeSystem();
+		prod := new Product(mk_token("automovel"));
+		order1 := new Order(<BUY>,  prod, {"cor" |-> mk_token("azul"), "marca" |-> mk_token("Nissan")}, 0, 100);
+		order2 := new Order(<SELL>, prod, {"cor" |-> mk_token("vermelho"), "marca" |-> mk_token("Nissan")}, 30, 50);
+	
+		loadProducts(ex, {prod});
+		insertOrders(ex, {order1, order2});
+		ex.pickMatch(order1, order2);
+	);
+	
+	public testLoadAndCheckHistory: () ==> ()
+	testLoadAndCheckHistory() ==
+	(
+		dcl ex : ExchangeSystem;
+		dcl prod : Product;
+		dcl buyOrder: Order;
+		dcl sellOrder : Order;
+		dcl lastTransaction : Transaction;
+		
+		ex := new ExchangeSystem();
+		prod := new Product(mk_token("automovel"));
+		buyOrder := new Order(<BUY>,  prod, {"cor" |-> mk_token("vermelho"), "marca" |-> mk_token("Nissan")}, 0, 100);
+		sellOrder := new Order(<SELL>, prod, {"cor" |-> mk_token("vermelho"), "marca" |-> mk_token("Nissan")}, 30, 50);
+	
+		loadProducts(ex, {prod});
+		insertOrders(ex, {buyOrder, sellOrder});
+		ex.pickMatch(buyOrder, sellOrder);
+		
+		assertEqual(len ex.history, 1);
+	
+		lastTransaction := ex.getLastTransaction();
+		assertEqual(ex.history, [lastTransaction]);
+		
+		assertEqual(lastTransaction.buyOrder, buyOrder);
+		assertEqual(lastTransaction.sellOrder, sellOrder);
+	);
+
+	public testFailLoadProductSameID: () ==> ()
+	testFailLoadProductSameID() ==
+	(
+		dcl ex : ExchangeSystem;
+		dcl prod1 : Product;
+		dcl prod2 : Product;
+		
+		ex := new ExchangeSystem();
+		prod1 := new Product(mk_token("id"));
+		prod2 := new Product(mk_token("id"));
+		
+		loadProducts(ex, {prod1, prod2});
+	);
+	
+end TestExchangeSystem
