@@ -1,7 +1,7 @@
 class Transaction
 /*
 	Defines a transaction that previously took place in the exchange system.
-	A transaction is composed of pair of orders.
+	A transaction is composed of a pair of orders.
 */
 
 types

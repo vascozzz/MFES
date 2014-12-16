@@ -24,7 +24,7 @@ operations
 	
 	/***** TEST CASES WITH VALID INPUTS ******/
 	
-	-- Scene 1:
+	-- Scenario 1:
 	-- The system administrator should be able configure the products that are allowed to be bought/sold.
 	public testInsertProducts: () ==> ()
 	testInsertProducts() == 
@@ -37,7 +37,7 @@ operations
 		assertEqual(ex.products, {prod1, prod2});
 	);
 	
-	-- Scene 2:
+	-- Scenario 2:
 	-- The system administrator should be able to remove a product and all orders associated to it.
 	public testRemoveProducts: () ==> ()
 	testRemoveProducts() == 
@@ -60,7 +60,7 @@ operations
 		assertEqual(ex.orders, {});
 	);
 	
-	-- Scene 3:
+	-- Scenario 3:
 	-- The end user (buyer or seller) should be to place a new order on the system (either buying or selling).
 	public testInsertOrder: () ==> ()
 	testInsertOrder() ==
@@ -76,7 +76,7 @@ operations
 		assertEqual(ex.products, {prod});
 	);
 	
-	-- Scene 4:
+	-- Scenario 4:
 	-- The end user (buyer or seller) should be able to cancel an order previously placed if it has not yet been matched.
 	public testCancelOrder: () ==> ()
 	testCancelOrder() ==
@@ -92,7 +92,7 @@ operations
 		assertEqual(ex.orders, {});
 	);
 
-	-- Scene 5:
+	-- Scenario 5:
 	-- The end user (buyer or seller) should be able to check all orders that match a given order.
 	public testCheckMatches: () ==> ()
 	testCheckMatches() ==
@@ -109,21 +109,25 @@ operations
 		dcl order5 : Order := new Order(<SELL>, prod1, {"color" |-> mk_token("red"), "brand" |-> mk_token("Nissan")}, 30, 50);
 		
 		insertProducts(ex, {prod1, prod2});
-				
+		
+		-- should return no matches because order2's price range does not intersect
 		insertOrders(ex, {order1, order2});
 		assertEqual(ex.matchOrder(order1), {});
 		
+		-- should return no matches because order3 has none of the required attributes
 		insertOrders(ex, {order3});
 		assertEqual(ex.matchOrder(order1), {});
 		
+		-- should return no matches because order4 has a diff key->value on a required key
 		insertOrders(ex, {order4});
 		assertEqual(ex.matchOrder(order1), {});
 		
+		-- should return, since the new order matches
 		insertOrders(ex, {order5});
 		assertEqual(ex.matchOrder(order1), {order5});
 	);
 	
-	-- Scene 6:
+	-- Scenario 6:
 	-- The end user (buyer or seller) should be able to make a trade by matching two given orders.
 	public testPickOrder: () ==> ()
 	testPickOrder() ==
@@ -138,7 +142,7 @@ operations
 		ex.pickMatch(order1, order2);
 	);
 	
-	-- Scene 7:
+	-- Scenario 7:
 	-- The end user (buyer or seller) should be able to check all transactions previously completed.
 	public testCheckHistory: () ==> ()
 	testCheckHistory() ==
