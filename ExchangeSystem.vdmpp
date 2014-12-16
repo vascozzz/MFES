@@ -33,6 +33,7 @@ operations
 	public insertProduct: Product ==> ()
 	insertProduct(product) ==
 		products := products union {product}
+	pre not exists p in set products & p.id = product.id
 	post product in set products;
 		
 	public removeProduct: Product ==> ()
@@ -118,9 +119,12 @@ operations
 	getHistory() ==
 		return history;
 
-	public getLastTransaction : () ==> Transaction
+	public getLastTransaction : () ==> [Transaction]
 	getLastTransaction() ==
-		return history(len history);
+		return if history = [] then 
+			nil 
+		else 
+			history(len history);
 
 functions
 	-- Checks if one map is subset of the other.
