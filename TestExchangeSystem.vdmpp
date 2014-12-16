@@ -125,6 +125,9 @@ operations
 		-- should return, since the new order matches
 		insertOrders(ex, {order5});
 		assertEqual(ex.matchOrder(order1), {order5});
+		
+		-- if we switch them, we should get order one
+		assertEqual(ex.matchOrder(order5), {order1});
 	);
 	
 	-- Scenario 6:
@@ -140,6 +143,14 @@ operations
 		insertProducts(ex, {prod});
 		insertOrders(ex, {order1, order2});
 		ex.pickMatch(order1, order2);
+		
+		-- If we switch the orders, picking should still work
+		
+		order1 := new Order(<BUY>,  prod, {"color" |-> mk_token("red"), "brand" |-> mk_token("Nissan")}, 0, 100);
+		order2 := new Order(<SELL>, prod, {"color" |-> mk_token("red"), "brand" |-> mk_token("Nissan")}, 30, 50);
+
+		insertOrders(ex, {order1, order2});
+		ex.pickMatch(order2, order1);
 	);
 	
 	-- Scenario 7:
@@ -195,6 +206,15 @@ operations
 		insertProducts(ex, {prod1, prod2});
 	);
 	
+	-- Attempting to remove a non-existing product.
+	public testFailRemoveProduct: () ==> ()
+	testFailRemoveProduct() ==
+	(
+		dcl ex : ExchangeSystem := new ExchangeSystem();
+		dcl prod : Product := new Product(mk_token("car"));
+		
+		ex.removeProduct(prod);
+	);
 	
 	/***** Entry point that runs all tests with valid inputs ******/
   public testAll: () ==> ()
